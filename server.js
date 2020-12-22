@@ -3,6 +3,22 @@ const bodyParser = require('body-parser');
 //bcrypt is for security
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
+const knex = require('knex');
+
+//connect postgres
+const db = knex({
+    client: "pg",
+    connection: {
+        host: "127.0.0.1",
+        user: "postgres",
+        password: "test",
+        database: "smart-brain"
+    }
+});
+
+db.select('*').from('users').then(data => {
+    console.log(data);
+});
 
 const app = express();
 
@@ -89,15 +105,19 @@ app.post('/register', (req, res) => {
     const { email, name, password } = req.body;
 
     //add new users info from frontend to the database
-    database.users.push({
-        id: '125',
-        name: name,
-        email: email,
-        entries: 0,
-        joined: new Date()
-    })
-    //response is a must and it responses with the last array in database
-    res.json(database.users[database.users.length - 1])
+    db('users')
+        .returning('*')
+        .insert({
+            email: email,
+            name: name,
+            joined: new Date()
+        })
+        .then(user => {
+            //response is a must and it responses with the last array in database
+            res.json(user[0]);
+        })
+        .catch(err => res.status(400).json('Unable to register'))
+
 })
 
 
