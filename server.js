@@ -16,9 +16,9 @@ const db = knex({
     }
 });
 
-db.select('*').from('users').then(data => {
-    console.log(data);
-});
+// db.select('*').from('users').then(data => {
+//     console.log(data);
+// });
 
 const app = express();
 
@@ -29,36 +29,36 @@ app.use(bodyParser.json());
 app.use(cors())
 
 
-const database = {
-    users: [
-        {
-            id: '123',
-            name: 'Ally',
-            password: 'cookies',
-            email: 'ally@gmail.com',
-            entries: 0,
-            joined: new Date()
-        },
+// const database = {
+//     users: [
+//         {
+//             id: '123',
+//             name: 'Ally',
+//             password: 'cookies',
+//             email: 'ally@gmail.com',
+//             entries: 0,
+//             joined: new Date()
+//         },
 
-        {
-            id: '124',
-            name: 'Adam',
-            password: 'bananas',
-            email: 'Adam@gmail.com',
-            entries: 0,
-            joined: new Date()
-        }
+//         {
+//             id: '124',
+//             name: 'Adam',
+//             password: 'bananas',
+//             email: 'Adam@gmail.com',
+//             entries: 0,
+//             joined: new Date()
+//         }
 
-    ],
-    login: [
-        {
-            id: '987',
-            hash: '__',
-            email: 'john@gmail.com'
-        }
-    ]
+//     ],
+//     login: [
+//         {
+//             id: '987',
+//             hash: '__',
+//             email: 'john@gmail.com'
+//         }
+//     ]
 
-}
+// }
 
 app.get('/', (req, res) => {
     res.send(database.users);
@@ -86,20 +86,6 @@ app.post('/signin', (req, res) => {
     }
 })
 
-app.put('/image', (req, res) => {
-    const { id } = req.body;
-    let found = false;
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            user.entries++
-            return res.json(user.entries);
-        }
-    })
-    if (!found) {
-        res.status(400).json('not found');
-    }
-})
 
 app.post('/register', (req, res) => {
     const { email, name, password } = req.body;
@@ -123,31 +109,31 @@ app.post('/register', (req, res) => {
 
 app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
-    let found = 'false';
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            return res.json(user);
-        }
+    db.select('*').from('users').where({
+        id
     })
-    if (!found) {
-        res.status(400).json("not found");
-    }
+        .then(user => {
+            if (user.length) {
+                res.json(user[0])
+            } else {
+                res.status(400).json('Not Found')
+            }
+        })
+        .catch(err => res.status(400).json('error getting user'))
+    // if (!found) {
+    //     res.status(400).json("not found");
+    // }
 })
 
 app.put('/image', (req, res) => {
     const { id } = req.body;
-    let found = 'false';
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            user.entries++
-            return res.json(user.entries);
-        }
-    })
-    if (!found) {
-        res.status(400).json("not found");
-    }
+    db('users').where('id', '=', id)
+        .increment('entries', 1)
+        .returning('entries')
+        .then(entries => {
+            res.json(entries[0]);
+        })
+        .catch(err => res.status(400).json('unable to get entries'))
 })
 
 bcrypt.hash("bacon", null, null, function (err, hash) {
