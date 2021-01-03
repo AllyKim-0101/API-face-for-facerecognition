@@ -1,3 +1,24 @@
+const { json } = require('body-parser');
+const Clarifai = require('clarifai');
+
+
+//hiding clarifai API in backend
+const app = new Clarifai.App({
+    apiKey: 'f5da76700cd2419bb869b750de6a14b4'
+});
+
+const handleApiCall = (req, res) => {
+    app.models
+        .predict(
+            Clarifai.FACE_DETECT_MODEL,
+            req.body.input)
+        .then(data => {
+            res.json(data);
+        })
+        .catch(err => res.status(400).json('unable to work with API'))
+
+}
+
 const handleImage = (req, res, db) => {
     const { id } = req.body;
     db('users').where('id', '=', id)
@@ -10,6 +31,7 @@ const handleImage = (req, res, db) => {
 }
 
 module.exports = {
-    handleImage
+    handleImage,
+    handleApiCall
 
 }
