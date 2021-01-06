@@ -4,7 +4,8 @@ const Clarifai = require('clarifai');
 
 //hiding clarifai API in backend
 const app = new Clarifai.App({
-    apiKey: 'f5da76700cd2419bb869b750de6a14b4'
+    //go to clarifi to see real API- this is for security
+    apiKey: process.env.API_CLARIFI
 });
 
 const handleApiCall = (req, res) => {
